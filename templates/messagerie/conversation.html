@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titre %}{{ autre.nom_affiche }} — Messages — {{ site.nom_complet }}{% endblock %}
+{% block corps_classe %}chat-ouvert{% endblock %}
+{% block contenu %}
+<div class="container py-lg-4 px-0 px-lg-3">
+  <div class="chat-shell">
+    <aside class="chat-liste-col d-none d-lg-flex">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <h1 class="h5 mb-0"><i class="bi bi-chat-dots text-primary me-2"></i>Messages</h1>
+        <a class="btn-icone" href="{% url 'messagerie:liste' %}" aria-label="Nouvelle conversation"><i class="bi bi-plus-lg"></i></a>
+      </div>
+      {% include "messagerie/_liste_conversations.html" %}
+    </aside>
+
+    <section class="chat-fil-col" id="chat-fil" data-conv="{{ conv.pk }}"
+             data-lire="{% url 'messagerie:lire' conv.pk %}" data-nouveaux="{% url 'messagerie:nouveaux' conv.pk %}">
+      <header class="chat-entete">
+        <a class="btn-icone d-lg-none" href="{% url 'messagerie:liste' %}" aria-label="Retour aux conversations"><i class="bi bi-arrow-left"></i></a>
+        <a class="d-flex align-items-center gap-2 text-reset text-decoration-none" href="{% url 'plume:profil' autre.username %}">
+          {% include "partials/_avatar.html" with u=autre taille=40 %}
+          <span class="lh-sm"><strong class="d-block">{{ autre.nom_affiche }}</strong><small class="text-secondary">@{{ autre.username }}</small></span>
+        </a>
+      </header>
+
+      <div class="chat-messages" id="chat-messages">
+        {% for m in messages_chat %}
+          {% ifchanged m.date_envoi|date:"Y-m-d" %}<div class="chat-jour">{{ m.date_envoi|date:"l j F" }}</div>{% endifchanged %}
+          <div class="bulle {% if m.expediteur_id == user.pk %}moi{% else %}autre{% endif %}" data-id="{{ m.pk }}">
+            <div class="bulle-texte">{{ m.contenu }}</div>
+            <div class="bulle-heure">{{ m.date_envoi|date:"H:i" }}</div>
+          </div>
+        {% empty %}
+          <div class="chat-vide" id="chat-vide"><i class="bi bi-chat-heart fs-2 d-block mb-1"></i>Dites bonjour à {{ autre.nom_affiche }}.</div>
+        {% endfor %}
+      </div>
+
+      <form class="chat-saisie" id="chat-form" method="post" action="{% url 'messagerie:envoyer' conv.pk %}">
+        {% csrf_token %}
+        <textarea name="contenu" rows="1" maxlength="2000" placeholder="Écrivez votre message…" aria-label="Votre message" required></textarea>
+        <button class="btn-envoyer" type="submit" aria-label="Envoyer"><i class="bi bi-send-fill"></i></button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

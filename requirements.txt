@@ -1,0 +1,10 @@
+Django>=5.0,<5.3
+Pillow>=10.0
+whitenoise>=6.6
+# Chat en temps réel (WebSocket)
+channels>=4.1
+daphne>=4.1
+# Optionnel : plusieurs processus en production (définir REDIS_URL)
+# channels-redis>=4.2
+# Optionnel : PostgreSQL (POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST)
+# psycopg[binary]>=3.1

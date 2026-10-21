@@ -1,0 +1,23 @@
+{% extends "gestion/base.html" %}
+{% block gestion %}
+<div class="bloc" style="max-width: 680px;">
+  <h2 class="h5 mb-1">Paramètres du site</h2>
+  <p class="text-secondary small mb-4">Ces textes et règles sont stockés en base de données et s'appliquent immédiatement à tout le site.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/_erreurs.html" %}
+    <div class="row g-3">
+      <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.nom_site %}</div>
+      <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.sous_titre %}</div>
+    </div>
+    {% include "partials/_champ.html" with champ=form.slogan %}
+    {% include "partials/_champ.html" with champ=form.description %}
+    {% include "partials/_champ.html" with champ=form.texte_pied %}
+    <div class="row g-3">
+      <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.min_caracteres %}</div>
+      <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.textes_par_page %}</div>
+    </div>
+    <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+  </form>
+</div>
+{% endblock %}

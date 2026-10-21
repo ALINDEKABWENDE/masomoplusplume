@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titre %}Mot de passe — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container">
+  <div class="carte-auth">
+    <h1 class="h4 mb-4"><i class="bi bi-key text-primary me-2"></i>Changer le mot de passe</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "partials/_erreurs.html" %}
+      {% include "partials/_champ.html" with champ=form.old_password %}
+      {% include "partials/_champ.html" with champ=form.new_password1 %}
+      {% include "partials/_champ.html" with champ=form.new_password2 %}
+      <button class="btn btn-primary" type="submit">Modifier le mot de passe</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

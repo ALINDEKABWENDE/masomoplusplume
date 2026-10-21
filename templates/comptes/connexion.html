@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titre %}Connexion — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container">
+  <div class="carte-auth">
+    <h1 class="h3 mb-1">Bon retour sur {{ site.nom_site }}</h1>
+    <p class="text-secondary mb-4">Connectez-vous pour écrire, commenter et suivre vos auteurs.</p>
+    {% if request.GET.raison %}
+      <div class="alert alert-info py-2 small"><i class="bi bi-info-circle me-1"></i>
+        {% if request.GET.raison == "aimer" %}Connectez-vous pour aimer ce texte.
+        {% elif request.GET.raison == "commenter" %}Connectez-vous pour commenter ce texte.
+        {% elif request.GET.raison == "suivre" %}Connectez-vous pour suivre cet auteur.
+        {% elif request.GET.raison == "message" %}Connectez-vous pour envoyer un message.
+        {% else %}Connectez-vous pour continuer.{% endif %}
+      </div>
+    {% endif %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "partials/_erreurs.html" %}
+      <input type="hidden" name="next" value="{{ next }}">
+      {% include "partials/_champ.html" with champ=form.username %}
+      {% include "partials/_champ.html" with champ=form.password %}
+      <button class="btn btn-primary w-100 py-2" type="submit"><i class="bi bi-box-arrow-in-right me-1"></i> Se connecter</button>
+    </form>
+    <p class="text-center text-secondary mt-4 mb-0">Pas encore de compte ? <a href="{% url 'comptes:inscription' %}">Créer un compte</a></p>
+  </div>
+</div>
+{% endblock %}

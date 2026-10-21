@@ -1,0 +1,30 @@
+<div class="commentaire" id="commentaire-{{ commentaire.pk }}">
+  <div class="d-flex gap-2 gap-sm-3 p-1">
+    <a href="{% url 'plume:profil' commentaire.utilisateur.username %}">{% include "partials/_avatar.html" with u=commentaire.utilisateur taille=36 %}</a>
+    <div class="flex-grow-1" style="min-width: 0;">
+      <div class="small mb-1">
+        <a class="fw-semibold text-reset text-decoration-none" href="{% url 'plume:profil' commentaire.utilisateur.username %}">{{ commentaire.utilisateur.nom_affiche }}</a>
+        {% if commentaire.utilisateur_id == pub.auteur_id %}<span class="badge text-bg-primary ms-1">Auteur</span>{% endif %}
+        <span class="text-secondary ms-1">il y a {{ commentaire.date_creation|timesince }}</span>
+      </div>
+      <div class="commentaire-texte">{{ commentaire.contenu|linebreaksbr }}</div>
+      <div class="mt-1">
+        {% if user.is_authenticated and not apercu %}
+          <button type="button" class="lien-action" data-repondre="{{ commentaire.pk }}" data-nom="{{ commentaire.utilisateur.nom_affiche }}"><i class="bi bi-reply me-1"></i>Répondre</button>
+        {% endif %}
+        {% if user == commentaire.utilisateur or user == pub.auteur or user.est_admin %}
+          <form class="d-inline" method="post" action="{% url 'plume:supprimer_commentaire' commentaire.pk %}" onsubmit="return confirm('Supprimer ce commentaire ?');">
+            {% csrf_token %}<button type="submit" class="lien-action danger"><i class="bi bi-trash me-1"></i>Supprimer</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% if commentaire.enfants %}
+    <div class="commentaire-enfants">
+      {% for enfant in commentaire.enfants %}
+        {% include "plume/_commentaire.html" with commentaire=enfant %}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,19 @@
+<div class="chat-liste" id="chat-liste">
+  {% for c in conversations %}
+    <a class="chat-item {% if conv and conv.pk == c.pk %}actif{% endif %}" href="{% url 'messagerie:conversation' c.pk %}" data-conv="{{ c.pk }}">
+      {% include "partials/_avatar.html" with u=c.autre_utilisateur taille=48 %}
+      <div class="flex-grow-1" style="min-width: 0;">
+        <div class="d-flex justify-content-between gap-2">
+          <strong class="text-truncate">{{ c.autre_utilisateur.nom_affiche }}</strong>
+          <small class="text-secondary text-nowrap" data-heure>{{ c.date_dernier_message|date:"d/m H:i" }}</small>
+        </div>
+        <div class="d-flex justify-content-between align-items-center gap-2">
+          <span class="chat-apercu text-truncate" data-apercu>{% if c.dernier_moi %}Vous : {% endif %}{{ c.dernier_contenu|default:"Nouvelle conversation" }}</span>
+          <span class="badge-messages" data-non-lus {% if not c.non_lus %}hidden{% endif %}>{{ c.non_lus }}</span>
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <p class="text-secondary small p-4 mb-0 text-center">Aucune conversation pour l'instant.<br>Recherchez un utilisateur pour commencer.</p>
+  {% endfor %}
+</div>

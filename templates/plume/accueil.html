@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block titre %}{{ site.nom_complet }} — {{ site.slogan }}{% endblock %}
+{% block contenu %}
+{% if not filtres_actifs and not page_obj.number > 1 %}
+<section class="hero py-5">
+  <i class="bi bi-feather hero-plume" aria-hidden="true"></i>
+  <div class="container py-lg-4">
+    <h1 class="mb-3">{{ site.slogan }}</h1>
+    <p class="mb-4">{{ site.description }}</p>
+    <form class="recherche-hero mb-4" action="{% url 'plume:recherche' %}" role="search">
+      <i class="bi bi-search"></i>
+      <input class="form-control" type="search" name="q" placeholder="Rechercher un texte, un sujet, un auteur" aria-label="Rechercher">
+    </form>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-soleil btn-lg" href="{% url 'plume:ecrire' %}"><i class="bi bi-pencil-square me-2"></i>Écrire un texte</a>
+      {% if not user.is_authenticated %}<a class="btn btn-outline-light btn-lg" href="{% url 'comptes:inscription' %}">Créer un compte</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<div class="container py-4">
+  <div class="row g-5">
+    <div class="col-lg-8">
+      {% include "plume/_liste.html" %}
+    </div>
+    <aside class="col-lg-4 d-none d-lg-block">
+      <div class="position-sticky" style="top: 90px;">
+        <div class="bloc mb-4">
+          <h2 class="h5 mb-3">Catégories</h2>
+          {% for c in categories_nav %}
+            <a class="d-flex align-items-center justify-content-between text-decoration-none text-reset py-2 {% if not forloop.last %}border-bottom{% endif %}" href="{% url 'plume:accueil' %}?categorie={{ c.slug }}">
+              <span><i class="bi {{ c.icone }} text-primary me-2"></i>{{ c.nom }}</span>
+              <span class="text-secondary small">{{ c.nb }}</span>
+            </a>
+          {% empty %}
+            <p class="text-secondary small mb-0">Aucune catégorie pour l'instant.</p>
+          {% endfor %}
+        </div>
+        {% if auteurs_suggeres %}
+        <div class="bloc">
+          <h2 class="h5 mb-3">Auteurs à suivre</h2>
+          {% for a in auteurs_suggeres %}
+            <a class="d-flex align-items-center gap-3 text-decoration-none text-reset py-2" href="{% url 'plume:profil' a.username %}">
+              {% include "partials/_avatar.html" with u=a taille=40 %}
+              <span class="lh-sm">
+                <strong class="d-block">{{ a.nom_affiche }}</strong>
+                <small class="text-secondary">{{ a.nb_textes }} texte{{ a.nb_textes|pluralize }} · {{ a.nb_abonnes }} abonné{{ a.nb_abonnes|pluralize }}</small>
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

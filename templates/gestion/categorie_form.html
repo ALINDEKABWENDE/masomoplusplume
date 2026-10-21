@@ -1,0 +1,17 @@
+{% extends "gestion/base.html" %}
+{% block gestion %}
+<div class="bloc" style="max-width: 560px;">
+  <h2 class="h5 mb-3">Modifier « {{ categorie.nom }} »</h2>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/_erreurs.html" %}
+    {% include "partials/_champ.html" with champ=form.nom %}
+    {% include "partials/_champ.html" with champ=form.description %}
+    {% include "partials/_champ.html" with champ=form.icone %}
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+      <a class="btn btn-outline-secondary" href="{% url 'gestion:categories' %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

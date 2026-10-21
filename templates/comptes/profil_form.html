@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titre %}Modifier mon profil — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container">
+  <div class="carte-auth" style="max-width: 640px;">
+    <h1 class="h4 mb-1">Mon profil</h1>
+    <a href="{% url 'plume:profil' user.username %}" class="small">@{{ user.username }} · voir ma page publique</a>
+
+    <form method="post" enctype="multipart/form-data" novalidate class="mt-4">
+      {% csrf_token %}
+      {% include "partials/_erreurs.html" %}
+
+      <div class="photo-editeur text-center mb-4">
+        <label for="{{ form.photo_profil.id_for_label }}" class="photo-zone" tabindex="0" aria-label="Choisir une photo de profil">
+          <img id="apercu-photo" class="photo-grande {% if not user.photo_profil %}d-none{% endif %}" src="{% if user.photo_profil %}{{ user.photo_profil.url }}{% endif %}" alt="Ma photo de profil">
+          <span id="apercu-lettres" class="photo-grande photo-lettres {% if user.photo_profil %}d-none{% endif %}">{{ user.initiales }}</span>
+          <span class="photo-camera"><i class="bi bi-camera-fill"></i></span>
+        </label>
+        {{ form.photo_profil }}
+        <div class="mt-3 d-flex gap-2 justify-content-center align-items-center flex-wrap">
+          <label for="{{ form.photo_profil.id_for_label }}" class="btn btn-primary mb-0"><i class="bi bi-upload me-1"></i>{% if user.photo_profil %}Changer la photo{% else %}Ajouter une photo{% endif %}</label>
+          {% if user.photo_profil %}
+            <div class="form-check mb-0">{{ form.supprimer_photo }} <label class="form-check-label" for="{{ form.supprimer_photo.id_for_label }}">Supprimer ma photo</label></div>
+          {% endif %}
+        </div>
+        <div class="form-text mt-2">JPG, PNG, WebP ou GIF · 5 Mo maximum · recadrée automatiquement en carré. Elle s'enregistre en appuyant sur « Enregistrer ».</div>
+        {% for e in form.photo_profil.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="row g-3">
+        <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.first_name %}</div>
+        <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.last_name %}</div>
+      </div>
+      {% include "partials/_champ.html" with champ=form.profession %}
+      <div class="row g-3">
+        <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.localisation %}</div>
+        <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.site_web %}</div>
+      </div>
+      {% include "partials/_champ.html" with champ=form.email %}
+      {% include "partials/_champ.html" with champ=form.biographie %}
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i> Enregistrer</button>
+        <a class="btn btn-outline-secondary" href="{% url 'comptes:mot_de_passe' %}"><i class="bi bi-key me-1"></i> Mot de passe</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

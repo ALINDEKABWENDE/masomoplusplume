@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block titre %}{{ auteur.nom_affiche }} (@{{ auteur.username }}) — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container py-4" style="max-width: 820px;">
+  <section class="bloc mb-4">
+    <div class="d-flex gap-3 align-items-start flex-wrap">
+      {% if user == auteur %}
+        <a class="avatar-editable" href="{% url 'comptes:modifier_profil' %}" aria-label="Changer ma photo de profil">
+          {% include "partials/_avatar.html" with u=auteur taille=96 %}
+          <span class="photo-camera sm"><i class="bi bi-camera-fill"></i></span>
+        </a>
+      {% else %}
+        {% include "partials/_avatar.html" with u=auteur taille=96 %}
+      {% endif %}
+      <div class="flex-grow-1" style="min-width: 220px;">
+        <h1 class="h3 mb-0">{{ auteur.nom_affiche }}</h1>
+        <div class="text-secondary mb-2">@{{ auteur.username }} · membre depuis {{ auteur.date_joined|date:"F Y" }}</div>
+        {% if auteur.profession or auteur.localisation or auteur.site_web %}
+          <div class="d-flex flex-wrap gap-3 small text-secondary mb-2">
+            {% if auteur.profession %}<span><i class="bi bi-briefcase me-1"></i>{{ auteur.profession }}</span>{% endif %}
+            {% if auteur.localisation %}<span><i class="bi bi-geo-alt me-1"></i>{{ auteur.localisation }}</span>{% endif %}
+            {% if auteur.site_web %}<a href="{{ auteur.site_web }}" target="_blank" rel="nofollow noopener"><i class="bi bi-link-45deg me-1"></i>Site web</a>{% endif %}
+          </div>
+        {% endif %}
+        {% if auteur.biographie %}<p class="mb-2">{{ auteur.biographie }}</p>{% endif %}
+        {% if user == auteur and not auteur.photo_profil %}
+          <a class="btn btn-sm btn-soleil" href="{% url 'comptes:modifier_profil' %}"><i class="bi bi-camera me-1"></i>Ajouter une photo de profil</a>
+        {% endif %}
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        {% if user == auteur %}
+          <a class="btn btn-outline-primary" href="{% url 'comptes:modifier_profil' %}"><i class="bi bi-pencil me-1"></i> Modifier</a>
+        {% else %}
+          <form method="post" action="{% url 'plume:suivre' auteur.username %}" class="js-toggle">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ auteur.get_absolute_url }}">
+            {% if user.is_authenticated %}
+              <button class="btn-action suivre {% if est_abonne %}actif{% endif %}" type="submit">
+                <i class="bi {% if est_abonne %}bi-person-check-fill{% else %}bi-person-plus{% endif %}" data-on="bi-person-check-fill" data-off="bi-person-plus"></i>
+                <span data-label data-on="Abonné" data-off="Suivre">{% if est_abonne %}Abonné{% else %}Suivre{% endif %}</span>
+              </button>
+            {% else %}
+              <a class="btn btn-primary" href="{% url 'comptes:connexion' %}?next={{ request.path }}&amp;raison=suivre"><i class="bi bi-person-plus me-1"></i> Suivre</a>
+            {% endif %}
+          </form>
+          {% if user.is_authenticated %}
+            <a class="btn-action" href="{% url 'messagerie:ouvrir' auteur.username %}"><i class="bi bi-chat-dots"></i> Message</a>
+          {% else %}
+            <a class="btn-action" href="{% url 'comptes:connexion' %}?next={{ request.path }}&amp;raison=message"><i class="bi bi-chat-dots"></i> Message</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="row text-center g-2 mt-3">
+      <div class="col-3"><div class="serif fs-4">{{ nb_textes }}</div><small class="text-secondary">Texte{{ nb_textes|pluralize }}</small></div>
+      <div class="col-3"><div class="serif fs-4">{{ nb_abonnes }}</div><small class="text-secondary">Abonné{{ nb_abonnes|pluralize }}</small></div>
+      <div class="col-3"><div class="serif fs-4">{{ nb_abonnements }}</div><small class="text-secondary">Abonnement{{ nb_abonnements|pluralize }}</small></div>
+      <div class="col-3"><div class="serif fs-4">{{ nb_likes }}</div><small class="text-secondary">J'aime reçus</small></div>
+    </div>
+  </section>
+
+  <h2 class="h5">Textes publiés</h2>
+  {% for p in page_obj %}
+    {% include "partials/_texte_item.html" with p=p %}
+  {% empty %}
+    <div class="vide"><i class="bi bi-journal"></i>{{ auteur.nom_affiche }} n'a pas encore publié de texte.</div>
+  {% endfor %}
+  {% include "partials/_pagination.html" %}
+</div>
+{% endblock %}

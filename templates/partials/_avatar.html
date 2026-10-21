@@ -1,0 +1,1 @@
+{% if u.photo_profil %}<img class="avatar" style="--t:{{ taille|default:36 }}px" src="{{ u.photo_profil.url }}" alt="">{% else %}<span class="avatar avatar-lettres" style="--t:{{ taille|default:36 }}px" aria-hidden="true">{{ u.initiales }}</span>{% endif %}

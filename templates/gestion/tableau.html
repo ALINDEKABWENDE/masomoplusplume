@@ -1,0 +1,55 @@
+{% extends "gestion/base.html" %}
+{% block gestion %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-3"><div class="stat"><i class="bi bi-people"></i><div class="valeur">{{ stats.utilisateurs }}</div><div class="nom">Utilisateurs</div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="stat"><i class="bi bi-pen"></i><div class="valeur">{{ stats.auteurs }}</div><div class="nom">Auteurs</div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="stat"><i class="bi bi-file-earmark-check"></i><div class="valeur">{{ stats.publiees }}</div><div class="nom">Textes publiés</div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="stat"><i class="bi bi-file-earmark"></i><div class="valeur">{{ stats.brouillons }}</div><div class="nom">Brouillons</div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="stat"><i class="bi bi-eye"></i><div class="valeur">{{ stats.vues }}</div><div class="nom">Vues</div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="stat"><i class="bi bi-heart"></i><div class="valeur">{{ stats.likes }}</div><div class="nom">J'aime</div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><div class="stat"><i class="bi bi-chat-dots"></i><div class="valeur">{{ stats.commentaires }}</div><div class="nom">Commentaires</div></div></div>
+  <div class="col-6 col-md-4 col-xl-3"><a class="stat d-block text-reset text-decoration-none" href="{% url 'gestion:signalements' %}"><i class="bi bi-flag"></i><div class="valeur">{{ stats.signalements }}</div><div class="nom">Signalements en attente</div></a></div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="bloc">
+      <h2 class="h6 mb-3">Textes publiés — 14 derniers jours</h2>
+      <div class="barres">{% for p in serie_textes %}<div style="height: {{ p.pct }}%;" title="{{ p.jour|date:'d/m' }} : {{ p.n }}"></div>{% endfor %}</div>
+      <div class="barres-legende"><span>{{ serie_textes.0.jour|date:"d/m" }}</span><span>aujourd'hui</span></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="bloc">
+      <h2 class="h6 mb-3">Inscriptions — 14 derniers jours</h2>
+      <div class="barres soleil">{% for p in serie_inscrits %}<div style="height: {{ p.pct }}%;" title="{{ p.jour|date:'d/m' }} : {{ p.n }}"></div>{% endfor %}</div>
+      <div class="barres-legende"><span>{{ serie_inscrits.0.jour|date:"d/m" }}</span><span>aujourd'hui</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="bloc h-100">
+      <h2 class="h6 mb-3">Textes les plus lus</h2>
+      {% for p in top_textes %}
+        <div class="d-flex justify-content-between gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          <a class="text-reset text-decoration-none" href="{{ p.get_absolute_url }}">{{ p.titre }}<br><small class="text-secondary">{{ p.auteur.nom_affiche }}</small></a>
+          <span class="text-secondary small text-nowrap"><i class="bi bi-eye"></i> {{ p.nombre_vues }}</span>
+        </div>
+      {% empty %}<p class="text-secondary mb-0">Aucun texte publié.</p>{% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="bloc h-100">
+      <h2 class="h6 mb-3">Derniers inscrits</h2>
+      {% for u in derniers_inscrits %}
+        <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          {% include "partials/_avatar.html" with u=u taille=36 %}
+          <div class="lh-sm"><a class="text-reset fw-semibold text-decoration-none" href="{{ u.get_absolute_url }}">{{ u.nom_affiche }}</a><br><small class="text-secondary">@{{ u.username }} · {{ u.date_joined|date:"j M Y" }}</small></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

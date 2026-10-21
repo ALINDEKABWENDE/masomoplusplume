@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titre %}Explorer — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container py-4" style="max-width: 820px;">
+  <h1 class="h2 mb-3">Explorer les textes</h1>
+  <form class="mb-3" action="{% url 'plume:recherche' %}" role="search">
+    <div class="input-group input-group-lg">
+      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Un titre, un mot, un auteur…" aria-label="Rechercher" {% if not q %}autofocus{% endif %}>
+      {% if categorie_active %}<input type="hidden" name="categorie" value="{{ categorie_active.slug }}">{% endif %}
+      {% if tri != "recent" %}<input type="hidden" name="tri" value="{{ tri }}">{% endif %}
+      <button class="btn btn-primary" type="submit" aria-label="Lancer la recherche"><i class="bi bi-search"></i></button>
+    </div>
+  </form>
+  {% include "plume/_liste.html" %}
+</div>
+{% endblock %}

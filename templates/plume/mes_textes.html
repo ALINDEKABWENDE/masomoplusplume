@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titre %}Mes textes — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Mes textes</h1>
+    <a class="btn btn-soleil d-none d-sm-inline-flex align-items-center gap-2" href="{% url 'plume:ecrire' %}"><i class="bi bi-pencil-square"></i> Nouveau texte</a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl"><div class="stat"><i class="bi bi-eye"></i><div class="valeur">{{ totaux.vues }}</div><div class="nom">Vues</div></div></div>
+    <div class="col-6 col-md-4 col-xl"><div class="stat"><i class="bi bi-heart"></i><div class="valeur">{{ totaux.likes }}</div><div class="nom">J'aime</div></div></div>
+    <div class="col-6 col-md-4 col-xl"><div class="stat"><i class="bi bi-chat-dots"></i><div class="valeur">{{ totaux.commentaires }}</div><div class="nom">Commentaires</div></div></div>
+    <div class="col-6 col-md-6 col-xl"><div class="stat"><i class="bi bi-share"></i><div class="valeur">{{ totaux.partages }}</div><div class="nom">Partages</div></div></div>
+    <div class="col-12 col-md-6 col-xl"><div class="stat"><i class="bi bi-people"></i><div class="valeur">{{ totaux.abonnes }}</div><div class="nom">Abonnés</div></div></div>
+  </div>
+
+  <div class="onglets mb-2">
+    <a href="{% url 'plume:mes_textes' %}" class="{% if not onglet %}actif{% endif %}">Tous ({{ nb_total }})</a>
+    <a href="?statut=publie" class="{% if onglet == 'publie' %}actif{% endif %}">Publiés ({{ compteurs.publie }})</a>
+    <a href="?statut=brouillon" class="{% if onglet == 'brouillon' %}actif{% endif %}">Brouillons ({{ compteurs.brouillon }})</a>
+    <a href="?statut=archive" class="{% if onglet == 'archive' %}actif{% endif %}">Archivés ({{ compteurs.archive }})</a>
+  </div>
+
+  {% for p in textes %}
+    <article class="flux-item">
+      <div class="d-flex gap-2 align-items-start">
+        <div class="flex-grow-1" style="min-width: 0;">
+          <div class="mb-1">
+            {% if p.statut == "publie" %}<span class="badge text-bg-success badge-statut">Publié</span>
+            {% elif p.statut == "brouillon" %}<span class="badge text-bg-secondary badge-statut">Brouillon</span>
+            {% else %}<span class="badge text-bg-warning badge-statut">Archivé</span>{% endif %}
+            {% if p.masquee %}<span class="badge text-bg-danger badge-statut">Masqué par la modération</span>{% endif %}
+            {% if p.categorie %}<span class="text-secondary small ms-1"><i class="bi {{ p.categorie.icone }}"></i> {{ p.categorie.nom }}</span>{% endif %}
+          </div>
+          <h2 class="flux-titre mb-1"><a href="{% if p.statut == 'publie' %}{{ p.get_absolute_url }}{% else %}{% url 'plume:modifier' p.slug %}{% endif %}">{{ p.titre }}</a></h2>
+          <div class="flux-meta">
+            <span><i class="bi bi-calendar3"></i>{{ p.date_modification|date:"j M Y" }}</span>
+            <span><i class="bi bi-eye"></i>{{ p.nombre_vues }}</span>
+            <span><i class="bi bi-heart"></i>{{ p.nb_likes }}</span>
+            <span><i class="bi bi-chat-dots"></i>{{ p.nb_commentaires }}</span>
+            <span><i class="bi bi-share"></i>{{ p.nb_partages }}</span>
+          </div>
+        </div>
+        <div class="dropdown">
+          <button class="btn-icone" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions"><i class="bi bi-three-dots-vertical"></i></button>
+          <div class="dropdown-menu dropdown-menu-end">
+            <a class="menu-lien" href="{% url 'plume:modifier' p.slug %}"><i class="bi bi-pencil"></i> Modifier</a>
+            {% if p.statut != "publie" and not p.masquee %}
+              <form method="post" action="{% url 'plume:changer_statut' p.slug 'publier' %}">{% csrf_token %}<button class="menu-lien w-100 text-start"><i class="bi bi-cloud-upload"></i> Publier</button></form>
+            {% endif %}
+            {% if p.statut == "publie" %}
+              <form method="post" action="{% url 'plume:changer_statut' p.slug 'depublier' %}">{% csrf_token %}<button class="menu-lien w-100 text-start"><i class="bi bi-eye-slash"></i> Dépublier</button></form>
+            {% endif %}
+            {% if p.statut != "archive" %}
+              <form method="post" action="{% url 'plume:changer_statut' p.slug 'archiver' %}">{% csrf_token %}<button class="menu-lien w-100 text-start"><i class="bi bi-archive"></i> Archiver</button></form>
+            {% endif %}
+            <hr class="my-1">
+            <a class="menu-lien text-danger" href="{% url 'plume:supprimer' p.slug %}"><i class="bi bi-trash text-danger"></i> Supprimer</a>
+          </div>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <div class="vide">
+      <i class="bi bi-journal-plus"></i>
+      <p class="mb-3">Rien à afficher ici pour l'instant. Votre premier texte commence par un titre.</p>
+      <a class="btn btn-primary" href="{% url 'plume:ecrire' %}"><i class="bi bi-pencil-square me-1"></i> Écrire un texte</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

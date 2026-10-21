@@ -1,0 +1,15 @@
+<a class="menu-lien" href="{% url 'plume:profil' user.username %}"><i class="bi bi-person"></i> Mon profil public</a>
+<a class="menu-lien" href="{% url 'plume:mes_textes' %}"><i class="bi bi-journal-text"></i> Mes textes et statistiques</a>
+<a class="menu-lien" href="{% url 'messagerie:liste' %}"><i class="bi bi-chat-dots"></i> Messages
+  <span class="badge-messages ms-auto" data-badge-messages {% if not nb_messages_non_lus %}hidden{% endif %}>{{ nb_messages_non_lus }}</span></a>
+<a class="menu-lien" href="{% url 'plume:ecrire' %}"><i class="bi bi-pencil-square"></i> Écrire un texte</a>
+<a class="menu-lien" href="{% url 'comptes:modifier_profil' %}"><i class="bi bi-camera"></i> Modifier mon profil et ma photo</a>
+<a class="menu-lien" href="{% url 'comptes:mot_de_passe' %}"><i class="bi bi-key"></i> Mot de passe</a>
+{% if user.est_admin %}
+<a class="menu-lien" href="{% url 'gestion:tableau' %}"><i class="bi bi-shield-check"></i> Gestion de la plateforme
+  {% if nb_signalements_attente %}<span class="badge text-bg-danger ms-auto">{{ nb_signalements_attente }}</span>{% endif %}</a>
+{% endif %}
+<hr class="my-2">
+<form method="post" action="{% url 'comptes:deconnexion' %}">{% csrf_token %}
+  <button type="submit" class="menu-lien w-100 text-start"><i class="bi bi-box-arrow-right"></i> Se déconnecter</button>
+</form>

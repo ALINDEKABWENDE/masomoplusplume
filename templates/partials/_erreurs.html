@@ -1,0 +1,5 @@
+{% if form.non_field_errors %}
+<div class="alert alert-danger" role="alert">
+  {% for erreur in form.non_field_errors %}<div><i class="bi bi-exclamation-circle me-1"></i>{{ erreur }}</div>{% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titre %}Accès refusé — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container vide">
+  <i class="bi bi-lock"></i>
+  <h1 class="h3 text-body">Accès réservé</h1>
+  <p>Cette section est réservée aux administrateurs de la plateforme.</p>
+  <a class="btn btn-primary" href="{% url 'plume:accueil' %}">Retour à l'accueil</a>
+</div>
+{% endblock %}

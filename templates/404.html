@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titre %}Page introuvable — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container vide">
+  <i class="bi bi-compass"></i>
+  <h1 class="h3 text-body">Cette page n'existe pas</h1>
+  <p>Le texte a peut-être été dépublié ou son adresse a changé.</p>
+  <a class="btn btn-primary" href="{% url 'plume:accueil' %}">Retour à l'accueil</a>
+</div>
+{% endblock %}

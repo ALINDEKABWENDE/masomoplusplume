@@ -1,0 +1,40 @@
+<div class="puces" aria-label="Catégories">
+  <a class="puce-cat {% if not categorie_active %}actif{% endif %}" href="{{ url_toutes }}"><i class="bi bi-grid"></i>Toutes</a>
+  {% for c in categories_nav %}
+    <a class="puce-cat {% if categorie_active and categorie_active.pk == c.pk %}actif{% endif %}" href="?categorie={{ c.slug }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if tri != 'recent' %}&tri={{ tri }}{% endif %}"><i class="bi {{ c.icone }}"></i>{{ c.nom }}</a>
+  {% endfor %}
+</div>
+
+<div class="onglets mb-2" role="tablist">
+  {% for o in onglets %}
+    <a href="{{ o.url }}" class="{% if tri == o.cle %}actif{% endif %}"><i class="bi {{ o.icone }} me-1"></i>{{ o.nom }}</a>
+  {% endfor %}
+</div>
+
+{% if q or categorie_active %}
+  <p class="text-secondary small mt-3 mb-0">
+    {{ page_obj.paginator.count }} texte{{ page_obj.paginator.count|pluralize }}
+    {% if q %}pour « {{ q }} »{% endif %}
+    {% if categorie_active %}dans {{ categorie_active.nom }}{% endif %}
+  </p>
+{% endif %}
+
+{% for p in page_obj %}
+  {% if forloop.first and page_obj.number == 1 and not q %}
+    {% include "partials/_texte_item.html" with p=p vedette=True %}
+  {% else %}
+    {% include "partials/_texte_item.html" with p=p %}
+  {% endif %}
+{% empty %}
+  <div class="vide">
+    <i class="bi bi-journal-x"></i>
+    {% if tri == "suivis" %}
+      <p class="mb-3">Aucun texte pour l'instant. Suivez des auteurs pour remplir ce fil.</p>
+    {% else %}
+      <p class="mb-3">Aucun texte ne correspond à votre recherche. Essayez un autre mot ou une autre catégorie.</p>
+    {% endif %}
+    <a class="btn btn-primary" href="{% url 'plume:ecrire' %}"><i class="bi bi-pencil-square me-1"></i> Écrire un texte</a>
+  </div>
+{% endfor %}
+
+{% include "partials/_pagination.html" %}

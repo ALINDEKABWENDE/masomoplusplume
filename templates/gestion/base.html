@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titre %}Gestion — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container py-4">
+  <h1 class="h3 mb-3"><i class="bi bi-shield-check text-primary me-2"></i>Gestion de la plateforme</h1>
+  <nav class="nav nav-pills gestion-nav flex-nowrap overflow-auto pb-2 mb-4" aria-label="Sections de gestion">
+    <a class="nav-link {% if vue == 'tableau' %}active{% endif %}" href="{% url 'gestion:tableau' %}"><i class="bi bi-speedometer2 me-1"></i>Tableau de bord</a>
+    <a class="nav-link {% if vue == 'utilisateurs' %}active{% endif %}" href="{% url 'gestion:utilisateurs' %}"><i class="bi bi-people me-1"></i>Utilisateurs</a>
+    <a class="nav-link {% if vue == 'publications' %}active{% endif %}" href="{% url 'gestion:publications' %}"><i class="bi bi-file-earmark-text me-1"></i>Publications</a>
+    <a class="nav-link {% if vue == 'commentaires' %}active{% endif %}" href="{% url 'gestion:commentaires' %}"><i class="bi bi-chat-left-text me-1"></i>Commentaires</a>
+    <a class="nav-link {% if vue == 'categories' or vue == 'categorie_modifier' %}active{% endif %}" href="{% url 'gestion:categories' %}"><i class="bi bi-tags me-1"></i>Catégories</a>
+    <a class="nav-link {% if vue == 'plateformes' %}active{% endif %}" href="{% url 'gestion:plateformes' %}"><i class="bi bi-share me-1"></i>Partages</a>
+    <a class="nav-link {% if vue == 'motifs' %}active{% endif %}" href="{% url 'gestion:motifs' %}"><i class="bi bi-list-check me-1"></i>Motifs</a>
+    <a class="nav-link {% if vue == 'parametres' %}active{% endif %}" href="{% url 'gestion:parametres' %}"><i class="bi bi-sliders me-1"></i>Paramètres</a>
+    <a class="nav-link {% if vue == 'signalements' %}active{% endif %}" href="{% url 'gestion:signalements' %}"><i class="bi bi-flag me-1"></i>Signalements
+      {% if nb_signalements_attente %}<span class="badge text-bg-danger ms-1">{{ nb_signalements_attente }}</span>{% endif %}</a>
+  </nav>
+  {% block gestion %}{% endblock %}
+</div>
+{% endblock %}

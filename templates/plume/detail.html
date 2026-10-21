@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block titre %}{{ pub.titre }} — {{ site.nom_complet }}{% endblock %}
+{% block head %}
+  <meta name="description" content="{{ pub.contenu|truncatewords:30 }}">
+  <meta property="og:title" content="{{ pub.titre }}">
+  <meta property="og:description" content="{{ pub.contenu|truncatewords:30 }}">
+  <meta property="og:type" content="article">
+{% endblock %}
+
+{% block contenu %}
+<article class="container py-4 py-lg-5">
+  {% if apercu %}
+    <div class="alert alert-warning lecture-entete d-flex flex-wrap align-items-center gap-2">
+      <i class="bi bi-eye-slash"></i>
+      <span>Aperçu privé : ce texte n'est pas public ({{ pub.get_statut_display|lower }}{% if pub.masquee %}, masqué par la modération{% endif %}).</span>
+      {% if user == pub.auteur %}<a class="btn btn-sm btn-primary ms-auto" href="{% url 'plume:modifier' pub.slug %}">Modifier</a>{% endif %}
+    </div>
+  {% endif %}
+
+  <header class="lecture-entete">
+    {% if pub.categorie %}
+      <a class="puce-cat" href="{% url 'plume:accueil' %}?categorie={{ pub.categorie.slug }}"><i class="bi {{ pub.categorie.icone }}"></i>{{ pub.categorie.nom }}</a>
+    {% endif %}
+    <h1 class="lecture-titre">{{ pub.titre }}</h1>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <a href="{% url 'plume:profil' pub.auteur.username %}" class="d-flex align-items-center gap-2 text-reset text-decoration-none">
+        {% include "partials/_avatar.html" with u=pub.auteur taille=44 %}
+        <span class="lh-sm"><strong class="d-block">{{ pub.auteur.nom_affiche }}</strong>
+          <small class="text-secondary">{% if pub.date_publication %}{{ pub.date_publication|date:"j F Y" }}{% else %}Non publié{% endif %} · {{ pub.temps_lecture }} min de lecture</small></span>
+      </a>
+      {% if user != pub.auteur %}
+        <form method="post" action="{% url 'plume:suivre' pub.auteur.username %}" class="js-toggle ms-auto">
+          {% csrf_token %}<input type="hidden" name="next" value="{{ pub.get_absolute_url }}">
+          {% if user.is_authenticated %}
+            <button class="btn-action suivre {% if est_abonne %}actif{% endif %}" type="submit">
+              <i class="bi {% if est_abonne %}bi-person-check-fill{% else %}bi-person-plus{% endif %}" data-on="bi-person-check-fill" data-off="bi-person-plus"></i>
+              <span data-label data-on="Abonné" data-off="Suivre">{% if est_abonne %}Abonné{% else %}Suivre{% endif %}</span>
+            </button>
+          {% else %}
+            <a class="btn-action suivre" href="{% url 'comptes:connexion' %}?next={{ request.path }}&amp;raison=suivre"><i class="bi bi-person-plus"></i> Suivre</a>
+          {% endif %}
+        </form>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="lecture mt-4">{{ pub.contenu|linebreaks }}</div>
+
+  <!-- Actions : aimer, commenter, partager, signaler -->
+  <div class="barre-actions collante">
+    {% if user.is_authenticated and not apercu %}
+      <form method="post" action="{% url 'plume:aimer' pub.slug %}" class="js-toggle">
+        {% csrf_token %}
+        <button class="btn-action {% if est_aime %}actif{% endif %}" type="submit" aria-label="J'aime">
+          <i class="bi {% if est_aime %}bi-heart-fill{% else %}bi-heart{% endif %}" data-on="bi-heart-fill" data-off="bi-heart"></i>
+          <span data-compteur>{{ pub.nb_likes }}</span>
+        </button>
+      </form>
+    {% else %}
+      <a class="btn-action" href="{% url 'comptes:connexion' %}?next={{ request.path }}&amp;raison=aimer" aria-label="J'aime (connexion requise)"><i class="bi bi-heart"></i> {{ pub.nb_likes }}</a>
+    {% endif %}
+    <a class="btn-action" href="#commentaires"><i class="bi bi-chat-dots"></i> {{ pub.nb_commentaires }}</a>
+    <span class="btn-action" title="Vues"><i class="bi bi-eye"></i> {{ pub.nombre_vues }}</span>
+
+    {% if not apercu %}
+    <details class="menu-deroulant ms-sm-auto">
+      <summary class="btn-action"><i class="bi bi-share"></i><span class="d-none d-sm-inline">Partager</span> <span data-compteur-partages>{{ nb_partages }}</span></summary>
+      <div class="panneau-deroulant">
+        {% for l in liens_partage %}
+          <a class="menu-lien" href="{{ l.url }}" target="_blank" rel="noopener" data-partage="{{ l.cle }}" data-url-partage="{% url 'plume:partager' pub.slug %}"><i class="bi {{ l.icone }}"></i> {{ l.nom }}</a>
+        {% endfor %}
+        <button type="button" class="menu-lien w-100 text-start" data-copier="{{ url_absolue }}" data-url-partage="{% url 'plume:partager' pub.slug %}"><i class="bi bi-link-45deg"></i> <span data-libelle>Copier le lien</span></button>
+        <button type="button" class="menu-lien w-100 text-start" data-partage-natif="{{ url_absolue }}" data-titre="{{ pub.titre }}" data-url-partage="{% url 'plume:partager' pub.slug %}"><i class="bi bi-box-arrow-up"></i> Plus d'options…</button>
+      </div>
+    </details>
+    {% if user.is_authenticated and user != pub.auteur %}
+    <details class="menu-deroulant">
+      <summary class="btn-action" aria-label="Signaler"><i class="bi bi-flag"></i><span class="d-none d-sm-inline">Signaler</span></summary>
+      <div class="panneau-deroulant large">
+        <form method="post" action="{% url 'plume:signaler' pub.slug %}">
+          {% csrf_token %}
+          <div class="mb-2"><label class="form-label fw-semibold small" for="{{ form_signalement.motif.id_for_label }}">{{ form_signalement.motif.label }}</label>{{ form_signalement.motif }}</div>
+          <div class="mb-2"><label class="form-label fw-semibold small" for="{{ form_signalement.description.id_for_label }}">{{ form_signalement.description.label }}</label>{{ form_signalement.description }}</div>
+          <button type="submit" class="btn btn-primary btn-sm w-100">Envoyer le signalement</button>
+        </form>
+      </div>
+    </details>
+    {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- Auteur -->
+  <div class="boite-auteur d-flex gap-3 align-items-start">
+    <a href="{% url 'plume:profil' pub.auteur.username %}">{% include "partials/_avatar.html" with u=pub.auteur taille=56 %}</a>
+    <div class="flex-grow-1">
+      <div class="small text-secondary">Écrit par</div>
+      <a class="h5 serif text-reset text-decoration-none" href="{% url 'plume:profil' pub.auteur.username %}">{{ pub.auteur.nom_affiche }}</a>
+      <div class="text-secondary small mb-1">@{{ pub.auteur.username }} · {{ nb_abonnes }} abonné{{ nb_abonnes|pluralize }}</div>
+      {% if pub.auteur.biographie %}<p class="mb-2">{{ pub.auteur.biographie }}</p>{% endif %}
+      {% if user.is_authenticated and user != pub.auteur %}<a class="btn-action" href="{% url 'messagerie:ouvrir' pub.auteur.username %}"><i class="bi bi-chat-dots"></i> Envoyer un message</a>{% endif %}
+    </div>
+  </div>
+
+  <!-- Commentaires -->
+  <section id="commentaires" class="lecture-entete mb-5">
+    <h2 class="h4 mb-3">Commentaires <span class="text-secondary fs-6">({{ pub.nb_commentaires }})</span></h2>
+    {% if apercu %}
+      <p class="text-secondary">Les commentaires seront ouverts à la publication du texte.</p>
+    {% elif user.is_authenticated %}
+      <form id="form-commentaire" method="post" action="{% url 'plume:commenter' pub.slug %}" class="mb-4">
+        {% csrf_token %}
+        <input type="hidden" name="parent" value="">
+        <div id="bandeau-reponse" class="alert alert-info py-2 small d-none align-items-center justify-content-between">
+          <span><i class="bi bi-reply me-1"></i>Réponse à <strong data-cible></strong></span>
+          <button type="button" class="btn-close btn-sm" id="annuler-reponse" aria-label="Annuler la réponse"></button>
+        </div>
+        {{ form_commentaire.contenu }}
+        <div class="text-end mt-2"><button class="btn btn-primary" type="submit"><i class="bi bi-send me-1"></i> Commenter</button></div>
+      </form>
+    {% else %}
+      <div class="bloc mb-4 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+        <span>Connectez-vous pour commenter ce texte.</span>
+        <span><a class="btn btn-primary btn-sm" href="{% url 'comptes:connexion' %}?next={{ request.path }}&amp;raison=commenter">Se connecter</a>
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'comptes:inscription' %}">Créer un compte</a></span>
+      </div>
+    {% endif %}
+
+    {% for commentaire in commentaires %}
+      {% include "plume/_commentaire.html" with commentaire=commentaire %}
+    {% empty %}
+      <p class="text-secondary">Aucun commentaire pour l'instant. Lancez la discussion !</p>
+    {% endfor %}
+  </section>
+
+  {% if similaires %}
+  <section class="mx-auto" style="max-width: 46rem;">
+    <h2 class="h4 mb-2">À lire aussi</h2>
+    {% for p in similaires %}{% include "partials/_texte_item.html" with p=p %}{% endfor %}
+  </section>
+  {% endif %}
+</article>
+
+{% endblock %}

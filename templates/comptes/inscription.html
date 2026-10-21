@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titre %}Créer un compte — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container">
+  <div class="carte-auth" style="max-width: 540px;">
+    <h1 class="h3 mb-1">Rejoignez {{ site.nom_site }}</h1>
+    <p class="text-secondary mb-4">Un compte gratuit pour lire, publier et échanger autour des textes.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "partials/_erreurs.html" %}
+      <div class="row g-3">
+        <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.first_name %}</div>
+        <div class="col-sm-6">{% include "partials/_champ.html" with champ=form.last_name %}</div>
+      </div>
+      {% include "partials/_champ.html" with champ=form.username %}
+      {% include "partials/_champ.html" with champ=form.email %}
+      {% include "partials/_champ.html" with champ=form.password1 %}
+      {% include "partials/_champ.html" with champ=form.password2 %}
+      <button class="btn btn-primary w-100 py-2" type="submit"><i class="bi bi-person-plus me-1"></i> Créer mon compte</button>
+    </form>
+    <p class="text-center text-secondary mt-4 mb-0">Déjà inscrit ? <a href="{% url 'comptes:connexion' %}">Se connecter</a></p>
+  </div>
+</div>
+{% endblock %}

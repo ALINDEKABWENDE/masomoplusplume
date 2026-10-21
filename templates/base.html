@@ -1,0 +1,160 @@
+{% load static %}<!doctype html>
+<html lang="fr" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0B7A86">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block titre %}{{ site.nom_complet }}{% endblock %}</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("plume-theme");
+        if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-bs-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'css/plume.css' %}" rel="stylesheet">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block corps_classe %}{% endblock %}">
+{% with vue=request.resolver_match.url_name espace=request.resolver_match.namespace %}
+
+<header class="entete sticky-top">
+  <div class="container d-flex align-items-center gap-2 gap-lg-3 py-2" style="min-height: 56px;">
+    <a class="marque" href="{% url 'plume:accueil' %}" aria-label="{{ site.nom_complet }}, accueil">
+      <i class="bi bi-feather"></i><span>{{ site.nom_site }}</span>{% if site.sous_titre %}<small class="d-none d-sm-inline">{{ site.sous_titre }}</small>{% endif %}
+    </a>
+
+    <nav class="d-none d-lg-flex gap-1 ms-2" aria-label="Navigation principale">
+      <a class="lien-nav {% if vue == 'accueil' %}actif{% endif %}" href="{% url 'plume:accueil' %}">Accueil</a>
+      <a class="lien-nav {% if vue == 'recherche' %}actif{% endif %}" href="{% url 'plume:recherche' %}">Explorer</a>
+      {% if user.is_authenticated %}
+        <a class="lien-nav {% if vue == 'mes_textes' %}actif{% endif %}" href="{% url 'plume:mes_textes' %}">Mes textes</a>
+        <a class="lien-nav {% if espace == 'messagerie' %}actif{% endif %}" href="{% url 'messagerie:liste' %}">Messages <span class="badge-messages" data-badge-messages {% if not nb_messages_non_lus %}hidden{% endif %}>{{ nb_messages_non_lus }}</span></a>
+      {% endif %}
+    </nav>
+
+    <form class="recherche-entete d-none d-lg-block ms-auto" action="{% url 'plume:recherche' %}" role="search">
+      <i class="bi bi-search"></i>
+      <input class="form-control" type="search" name="q" value="{{ q|default:'' }}" placeholder="Rechercher un texte ou un auteur" aria-label="Rechercher">
+    </form>
+
+    <div class="ms-auto ms-lg-0 d-flex align-items-center gap-1 gap-lg-2">
+      <button type="button" class="btn-icone" data-theme-toggle aria-label="Changer de thème"><i class="bi bi-moon-stars" data-theme-icone></i></button>
+      <a class="btn-icone d-lg-none" href="{% url 'plume:recherche' %}" aria-label="Rechercher"><i class="bi bi-search"></i></a>
+      {% if user.is_authenticated %}
+        <a class="btn btn-soleil d-none d-lg-inline-flex align-items-center gap-2" href="{% url 'plume:ecrire' %}"><i class="bi bi-pencil-square"></i> Écrire</a>
+        <div class="dropdown d-none d-lg-block">
+          <button class="btn-icone p-0" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu du compte">
+            {% include "partials/_avatar.html" with u=user taille=38 %}
+          </button>
+          <div class="dropdown-menu dropdown-menu-end">
+            {% include "partials/_menu_compte.html" %}
+          </div>
+        </div>
+      {% else %}
+        <a class="btn btn-outline-primary d-none d-lg-inline-block" href="{% url 'comptes:connexion' %}">Se connecter</a>
+        <a class="btn btn-primary d-none d-lg-inline-block" href="{% url 'comptes:inscription' %}">Créer un compte</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% if messages %}
+<div class="container pt-3">
+  {% for m in messages %}
+    <div class="alert alert-{{ m.tags|default:'info' }} alert-dismissible fade show mb-2" role="alert" data-auto>
+      {{ m }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if user.is_authenticated and not user.photo_profil and vue == 'accueil' %}
+<div class="container pt-3">
+  <div class="alert alert-info d-flex align-items-center gap-2 mb-0 py-2">
+    <i class="bi bi-camera"></i><span class="flex-grow-1">Ajoutez une photo de profil pour que les autres auteurs vous reconnaissent.</span>
+    <a class="btn btn-sm btn-primary" href="{% url 'comptes:modifier_profil' %}">Ajouter</a>
+  </div>
+</div>
+{% endif %}
+
+<main>
+  {% block contenu %}{% endblock %}
+</main>
+
+<footer class="pied d-none d-lg-block mt-5 py-4">
+  <div class="container d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-feather text-primary"></i> <strong class="serif">{{ site.nom_site }}</strong> — {{ site.texte_pied }}{% if site.sous_titre %} · {{ site.sous_titre }}{% endif %}</span>
+    <span>
+      {% for c in categories_nav|slice:":5" %}<a class="text-secondary me-3" href="{% url 'plume:accueil' %}?categorie={{ c.slug }}">{{ c.nom }}</a>{% endfor %}
+    </span>
+  </div>
+</footer>
+
+<!-- Navigation mobile -->
+<nav class="nav-bas d-lg-none" aria-label="Navigation mobile">
+  <a href="{% url 'plume:accueil' %}" class="{% if vue == 'accueil' %}actif{% endif %}">
+    <i class="bi {% if vue == 'accueil' %}bi-house-fill{% else %}bi-house{% endif %}"></i><span>Accueil</span>
+  </a>
+  <a href="{% url 'plume:recherche' %}" class="{% if vue == 'recherche' %}actif{% endif %}">
+    <i class="bi bi-search"></i><span>Explorer</span>
+  </a>
+  <a href="{% url 'plume:ecrire' %}" class="ecrire" aria-label="Écrire un texte">
+    <span class="bulle"><i class="bi bi-plus-lg"></i></span><span>Écrire</span>
+  </a>
+  {% if user.is_authenticated %}
+    <a href="{% url 'messagerie:liste' %}" class="item-msg {% if espace == 'messagerie' %}actif{% endif %}">
+      <i class="bi {% if espace == 'messagerie' %}bi-chat-dots-fill{% else %}bi-chat-dots{% endif %}"></i><span>Messages</span>
+      <span class="badge-messages" data-badge-messages {% if not nb_messages_non_lus %}hidden{% endif %}>{{ nb_messages_non_lus }}</span>
+    </a>
+    <button type="button" data-bs-toggle="offcanvas" data-bs-target="#menuCompte" aria-controls="menuCompte">
+      <i class="bi bi-person-circle"></i><span>Compte</span>
+    </button>
+  {% else %}
+    <a href="{% url 'comptes:connexion' %}" class="{% if vue == 'connexion' %}actif{% endif %}">
+      <i class="bi bi-box-arrow-in-right"></i><span>Connexion</span>
+    </a>
+    <a href="{% url 'comptes:inscription' %}" class="{% if vue == 'inscription' %}actif{% endif %}">
+      <i class="bi bi-person-plus"></i><span>S'inscrire</span>
+    </a>
+  {% endif %}
+</nav>
+
+{% if user.is_authenticated %}
+<div class="offcanvas offcanvas-bottom d-lg-none" tabindex="-1" id="menuCompte" aria-labelledby="menuCompteTitre">
+  <div class="offcanvas-header">
+    <div class="d-flex align-items-center gap-3" id="menuCompteTitre">
+      {% include "partials/_avatar.html" with u=user taille=46 %}
+      <div class="lh-sm">
+        <div class="fw-bold">{{ user.nom_affiche }}</div>
+        <small class="text-secondary">@{{ user.username }}</small>
+      </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+  </div>
+  <div class="offcanvas-body pt-0">
+    {% include "partials/_menu_compte.html" %}
+  </div>
+</div>
+{% endif %}
+
+{% endwith %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/plume.js' %}?v=4"></script>
+{% if user.is_authenticated %}
+<script>window.PLUME_CHAT = { userId: {{ user.pk }}, nonLus: {{ nb_messages_non_lus|default:0 }}, nonLusUrl: "{% url 'messagerie:non_lus' %}", wsChemin: "/ws/messagerie/" };</script>
+<script src="{% static 'js/messagerie.js' %}?v=3"></script>
+{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

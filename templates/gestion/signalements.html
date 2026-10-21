@@ -1,0 +1,38 @@
+{% extends "gestion/base.html" %}
+{% block gestion %}
+<div class="onglets mb-3">
+  <a href="?statut=en_attente" class="{% if statut == 'en_attente' %}actif{% endif %}">En attente</a>
+  <a href="?statut=traite" class="{% if statut == 'traite' %}actif{% endif %}">Traités</a>
+  <a href="?statut=rejete" class="{% if statut == 'rejete' %}actif{% endif %}">Rejetés</a>
+  <a href="?statut=" class="{% if not statut %}actif{% endif %}">Tous</a>
+</div>
+
+{% for s in page_obj %}
+  <div class="bloc mb-3">
+    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+      <div>
+        <span class="badge text-bg-danger me-1">{{ s.motif.nom }}</span>
+        {% if s.statut == "en_attente" %}<span class="badge text-bg-warning">En attente</span>{% elif s.statut == "traite" %}<span class="badge text-bg-success">Traité</span>{% else %}<span class="badge text-bg-secondary">Rejeté</span>{% endif %}
+        <div class="small text-secondary mt-1">Signalé par @{{ s.utilisateur.username }} · {{ s.date_creation|date:"j M Y H:i" }}
+          {% if s.traite_par %}· clôturé par @{{ s.traite_par.username }}{% endif %}</div>
+      </div>
+    </div>
+    {% if s.description %}<p class="mt-2 mb-2 fst-italic">« {{ s.description }} »</p>{% endif %}
+    <div class="border rounded-3 p-3 mt-2">
+      <a class="serif fw-semibold h6 text-reset text-decoration-none" href="{{ s.publication.get_absolute_url }}">{{ s.publication.titre }}</a>
+      {% if s.publication.masquee %}<span class="badge text-bg-danger ms-1">Masquée</span>{% endif %}
+      <div class="small text-secondary">par @{{ s.publication.auteur.username }}</div>
+      <p class="small mb-0 mt-1">{{ s.publication.contenu|truncatewords:40 }}</p>
+    </div>
+    {% if s.statut == "en_attente" %}
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <form method="post" action="{% url 'gestion:signalement_action' s.pk 'masquer' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-danger"><i class="bi bi-eye-slash me-1"></i>Masquer le texte et clôturer</button></form>
+      <form method="post" action="{% url 'gestion:signalement_action' s.pk 'rejeter' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Rejeter (contenu conforme)</button></form>
+    </div>
+    {% endif %}
+  </div>
+{% empty %}
+  <div class="vide"><i class="bi bi-shield-check"></i>Aucun signalement dans cette liste.</div>
+{% endfor %}
+{% include "partials/_pagination.html" %}
+{% endblock %}

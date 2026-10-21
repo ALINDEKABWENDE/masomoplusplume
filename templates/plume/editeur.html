@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titre %}{% if pub %}Modifier le texte{% else %}Nouveau texte{% endif %} — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container py-4">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h1 class="h4 mb-0"><i class="bi bi-pencil-square text-primary me-2"></i>{% if pub %}Modifier le texte{% else %}Nouveau texte{% endif %}</h1>
+          {% if pub %}<span class="badge text-bg-secondary badge-statut">{{ pub.get_statut_display }}</span>{% endif %}
+        </div>
+        {% include "partials/_erreurs.html" %}
+        <div class="mb-3">
+          {{ form.titre }}
+          {% for e in form.titre.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.categorie.id_for_label }}">{{ form.categorie.label }}</label>
+          {{ form.categorie }}
+        </div>
+        <div class="mb-2">
+          {{ form.contenu }}
+          {% for e in form.contenu.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="small text-secondary mb-4" id="compte-mots" aria-live="polite"></div>
+
+        <div class="d-flex flex-wrap gap-2">
+          {% if pub and pub.statut == "publie" %}
+            <button class="btn btn-primary" type="submit" name="action" value="publier"><i class="bi bi-check-lg me-1"></i> Mettre à jour</button>
+            <a class="btn btn-outline-secondary" href="{{ pub.get_absolute_url }}">Voir le texte</a>
+          {% else %}
+            <button class="btn btn-outline-primary" type="submit" name="action" value="brouillon"><i class="bi bi-save me-1"></i> Enregistrer le brouillon</button>
+            <button class="btn btn-primary" type="submit" name="action" value="publier"><i class="bi bi-cloud-upload me-1"></i> Publier</button>
+          {% endif %}
+          {% if pub %}<a class="btn btn-link text-danger ms-auto" href="{% url 'plume:supprimer' pub.slug %}"><i class="bi bi-trash me-1"></i>Supprimer</a>{% endif %}
+        </div>
+      </div>
+
+      <aside class="col-lg-4">
+        <div class="bloc">
+          <h2 class="h6"><i class="bi bi-check2-square text-primary me-2"></i>Avant de publier</h2>
+          <ul class="small text-secondary ps-3 mb-0">
+            <li class="mb-1">Un titre clair d'au moins 3 caractères.</li>
+            <li class="mb-1">Un texte d'au moins {{ site.min_caracteres }} caractères.</li>
+            <li class="mb-1">Une catégorie choisie.</li>
+            <li>Un brouillon reste privé tant que vous ne le publiez pas.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </form>
+</div>
+{% endblock %}

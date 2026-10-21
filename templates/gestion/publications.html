@@ -1,0 +1,45 @@
+{% extends "gestion/base.html" %}
+{% block gestion %}
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Titre ou auteur" aria-label="Rechercher"></div>
+  <div class="col-8 col-md-auto"><select class="form-select" name="statut" aria-label="Statut"><option value="">Tous les statuts</option>{% for v, n in statuts %}<option value="{{ v }}" {% if v == statut %}selected{% endif %}>{{ n }}</option>{% endfor %}<option value="masquee" {% if statut == "masquee" %}selected{% endif %}>Masquées</option></select></div>
+  <div class="col-4 col-md-auto"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-funnel"></i></button></div>
+</form>
+
+<div class="bloc p-0 table-responsive">
+  <table class="table align-middle mb-0">
+    <thead><tr><th>Texte</th><th>Statut</th><th class="text-center">Vues</th><th class="text-center">J'aime</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>
+    {% for p in page_obj %}
+      <tr>
+        <td style="min-width: 220px;"><a class="fw-semibold text-reset text-decoration-none" href="{{ p.get_absolute_url }}">{{ p.titre }}</a><br><small class="text-secondary">@{{ p.auteur.username }}{% if p.categorie %} · {{ p.categorie.nom }}{% endif %}</small></td>
+        <td>
+          {% if p.masquee %}<span class="badge text-bg-danger">Masquée</span>
+          {% elif p.statut == "publie" %}<span class="badge text-bg-success">Publié</span>
+          {% elif p.statut == "brouillon" %}<span class="badge text-bg-secondary">Brouillon</span>
+          {% else %}<span class="badge text-bg-warning">Archivé</span>{% endif %}
+        </td>
+        <td class="text-center">{{ p.nombre_vues }}</td>
+        <td class="text-center">{{ p.nb_likes }}</td>
+        <td class="text-end">
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-three-dots"></i></button>
+            <div class="dropdown-menu dropdown-menu-end">
+              {% if p.masquee %}
+                <form method="post" action="{% url 'gestion:publication_action' p.pk 'restaurer' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="menu-lien w-100 text-start"><i class="bi bi-arrow-counterclockwise"></i> Restaurer</button></form>
+              {% else %}
+                <form method="post" action="{% url 'gestion:publication_action' p.pk 'masquer' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="menu-lien w-100 text-start"><i class="bi bi-eye-slash"></i> Masquer</button></form>
+              {% endif %}
+              <form method="post" action="{% url 'gestion:publication_action' p.pk 'supprimer' %}" onsubmit="return confirm('Supprimer définitivement cette publication ?');">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="menu-lien w-100 text-start text-danger"><i class="bi bi-trash text-danger"></i> Supprimer</button></form>
+            </div>
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="text-center text-secondary py-4">Aucune publication ne correspond.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "partials/_pagination.html" %}
+{% endblock %}

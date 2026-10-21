@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titre %}Supprimer le texte — {{ site.nom_complet }}{% endblock %}
+{% block contenu %}
+<div class="container">
+  <div class="carte-auth text-center">
+    <i class="bi bi-trash fs-1 text-danger"></i>
+    <h1 class="h4 mt-2">Supprimer ce texte ?</h1>
+    <p class="text-secondary">« {{ pub.titre }} » sera supprimé définitivement, avec ses commentaires et ses J'aime. Pour le retirer sans le perdre, dépubliez-le ou archivez-le.</p>
+    <form method="post" class="d-flex gap-2 justify-content-center">
+      {% csrf_token %}
+      <a class="btn btn-outline-secondary" href="{% url 'plume:mes_textes' %}">Annuler</a>
+      <button class="btn btn-danger" type="submit">Supprimer définitivement</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

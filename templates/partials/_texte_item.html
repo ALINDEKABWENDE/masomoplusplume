@@ -1,0 +1,30 @@
+<article class="flux-item {% if vedette %}vedette{% endif %}">
+  <div class="d-flex align-items-center gap-2 mb-2 small">
+    {% include "partials/_avatar.html" with u=p.auteur taille=28 %}
+    <a href="{% url 'plume:profil' p.auteur.username %}" class="fw-semibold text-reset text-decoration-none">{{ p.auteur.nom_affiche }}</a>
+    <span class="text-secondary">· {{ p.date_publication|date:"j M Y" }}</span>
+  </div>
+  <h2 class="flux-titre"><a href="{{ p.get_absolute_url }}">{{ p.titre }}</a></h2>
+  <p class="flux-extrait">{% if vedette %}{{ p.contenu|truncatewords:55 }}{% else %}{{ p.contenu|truncatewords:36 }}{% endif %}</p>
+  <div class="flux-meta">
+    {% if p.categorie %}<a class="puce-cat" href="{% url 'plume:accueil' %}?categorie={{ p.categorie.slug }}"><i class="bi {{ p.categorie.icone }}"></i>{{ p.categorie.nom }}</a>{% endif %}
+    <span><i class="bi bi-clock"></i>{{ p.temps_lecture }} min</span>
+    {% if user.is_authenticated %}
+      <form method="post" action="{% url 'plume:aimer' p.slug %}" class="js-toggle">
+        {% csrf_token %}
+        <button class="flux-interaction {% if p.est_aime %}actif{% endif %}" type="submit" data-label-on="Retirer J'aime" data-label-off="J'aime" aria-label="{% if p.est_aime %}Retirer J'aime{% else %}J'aime{% endif %}" aria-pressed="{{ p.est_aime|yesno:'true,false' }}">
+          <i class="bi {% if p.est_aime %}bi-heart-fill{% else %}bi-heart{% endif %}" data-on="bi-heart-fill" data-off="bi-heart"></i>
+          <span data-compteur>{{ p.nb_likes }}</span>
+        </button>
+      </form>
+    {% else %}
+      <a class="flux-interaction" href="{% url 'comptes:connexion' %}?next={{ p.get_absolute_url }}&amp;raison=aimer" aria-label="Connectez-vous pour aimer ce texte">
+        <i class="bi bi-heart"></i>{{ p.nb_likes }}
+      </a>
+    {% endif %}
+    <a class="flux-interaction" href="{{ p.get_absolute_url }}#commentaires" aria-label="Voir les commentaires">
+      <i class="bi bi-chat-dots"></i>{{ p.nb_commentaires }}
+    </a>
+    <span><i class="bi bi-eye"></i>{{ p.nombre_vues }}</span>
+  </div>
+</article>
